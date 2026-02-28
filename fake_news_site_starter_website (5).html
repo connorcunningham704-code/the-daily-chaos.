@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Daily Chaos</title>
+  <style>
+    body { margin:0; font-family:Arial, Helvetica, sans-serif; background:#f4f4f4; color:#222; }
+    header { background:#111; color:white; padding:20px; text-align:center; }
+    nav { background:#c62828; padding:10px; text-align:center; }
+    nav a { color:white; margin:0 12px; text-decoration:none; font-weight:bold; cursor:pointer; }
+    .container { max-width:1100px; margin:auto; padding:20px; }
+    .breaking { background:gold; padding:10px; font-weight:bold; text-align:center; margin-bottom:20px; }
+    .articles { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+    .article { background:white; padding:15px; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .article h3 { margin-top:0; color:#c62828; }
+    .tag { display:inline-block; background:#eee; padding:4px 8px; font-size:.75em; border-radius:4px; margin-bottom:8px; }
+    footer { background:#111; color:#ccc; text-align:center; padding:15px; margin-top:30px; font-size:.9em; }
+    .editor, .login { background:#fff; padding:20px; border-radius:6px; margin-bottom:30px; box-shadow:0 2px 5px rgba(0,0,0,.1); }
+    input, textarea, select { width:100%; padding:8px; margin:6px 0; }
+    button { background:#c62828; color:white; border:none; padding:10px; cursor:pointer; font-weight:bold; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>THE DAILY CHAOS</h1>
+  <p>Independent Community News</p>
+</header>
+
+<nav>
+  <a onclick="setCategory('All')">Home</a>
+  <a onclick="setCategory('Politics')">Politics</a>
+  <a onclick="setCategory('Local')">Local</a>
+  <a onclick="setCategory('Entertainment')">Entertainment</a>
+  <a onclick="setCategory('Opinion')">Opinion</a>
+</nav>
+
+<div class="container">
+
+  <div class="breaking">🚨 BREAKING: Articles now save permanently</div>
+
+  <!-- LOGIN -->
+  <div class="login" id="loginBox">
+    <h2>🔐 Admin Login</h2>
+    <input id="password" type="password" placeholder="Enter admin password" />
+    <button onclick="login()">Login</button>
+  </div>
+
+  <!-- EDITOR -->
+  <div class="editor hidden" id="editor">
+    <h2>📝 Publish Article</h2>
+    <select id="tag">
+      <option>Politics</option>
+      <option>Local</option>
+      <option>Entertainment</option>
+      <option>Opinion</option>
+    </select>
+    <input id="headline" placeholder="Headline" />
+    <textarea id="story" rows="4" placeholder="Article text"></textarea>
+    <button onclick="addArticle()">Publish</button>
+  </div>
+
+  <section class="articles" id="articles"></section>
+</div>
+
+<footer>
+  © 2026 The Daily Chaos | Powered by LocalStorage CMS
+</footer>
+
+<script>
+  const ADMIN_PASSWORD = 'chaos123'; // CHANGE THIS
+  let currentCategory = 'All';
+
+  function login() {
+    const pass = document.getElementById('password').value;
+    if (pass === ADMIN_PASSWORD) {
+      document.getElementById('editor').classList.remove('hidden');
+      document.getElementById('loginBox').classList.add('hidden');
+    } else {
+      alert('Wrong password');
+    }
+  }
+
+  function getArticles() {
+    return JSON.parse(localStorage.getItem('articles') || '[]');
+  }
+
+  function saveArticles(articles) {
+    localStorage.setItem('articles', JSON.stringify(articles));
+  }
+
+  function addArticle() {
+    const tag = document.getElementById('tag').value;
+    const headline = document.getElementById('headline').value;
+    const story = document.getElementById('story').value;
+
+    if (!headline || !story) return alert('Fill all fields');
+
+    const articles = getArticles();
+    articles.unshift({ tag, headline, story, date: new Date().toLocaleString() });
+    saveArticles(articles);
+    renderArticles();
+
+    document.getElementById('headline').value = '';
+    document.getElementById('story').value = '';
+  }
+
+  function setCategory(cat) {
+    currentCategory = cat;
+    renderArticles();
+  }
+
+  function renderArticles() {
+    const container = document.getElementById('articles');
+    container.innerHTML = '';
+
+    const articles = getArticles();
+    articles
+      .filter(a => currentCategory === 'All' || a.tag === currentCategory)
+      .forEach(a => {
+        const div = document.createElement('div');
+        div.className = 'article';
+        div.innerHTML = `<span class="tag">${a.tag}</span><h3>${a.headline}</h3><p>${a.story}</p><small>${a.date}</small>`;
+        container.appendChild(div);
+      });
+  }
+
+  renderArticles();
+</script>
+
+</body>
+</html>
